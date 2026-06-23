@@ -1,0 +1,296 @@
+<!-- ============================================================
+     NIGHTWATCH — gothic noir edition
+     Move your cursor to sweep the signal. Wait for the lightning.
+     Anything after a 👇 is yours to change.
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nightwatch</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Cinzel:wght@500;700&family=Oswald:wght@300;400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:     #05070B;
+      --bg2:    #0A0E15;
+      --city:   #0C111A;
+      --city2:  #090D14;
+      --text:   #D6DCE4;
+      --muted:  #6A7686;
+      --signal: #F2C14E;
+      --steel:  #5C7C9E;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: radial-gradient(ellipse at 50% -10%, var(--bg2), var(--bg) 65%);
+      color: var(--text);
+      font-family: "Inter", system-ui, sans-serif;
+      line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased;
+    }
+
+    #rain { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    .fog {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 50% at 25% 85%, rgba(92,124,158,0.14), transparent 70%),
+        radial-gradient(ellipse 60% 45% at 78% 92%, rgba(92,124,158,0.12), transparent 72%),
+        radial-gradient(ellipse 90% 40% at 50% 100%, rgba(60,80,110,0.18), transparent 75%);
+      animation: drift 20s ease-in-out infinite alternate;
+    }
+    @keyframes drift { from { transform: translateX(-25px); } to { transform: translateX(25px); } }
+
+    /* searchlight beam + projected raven crest */
+    .beam-group {
+      position: fixed; bottom: 9vh; left: 50%; z-index: 2;
+      width: 30vw; height: 125vh;
+      transform-origin: bottom center; transform: translateX(-50%);
+      transition: transform 0.3s ease-out; pointer-events: none;
+    }
+    .beam {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(242,193,78,0.32), rgba(242,193,78,0.07) 48%, transparent 78%);
+      clip-path: polygon(45% 100%, 55% 100%, 90% 0%, 10% 0%);
+      filter: blur(9px); mix-blend-mode: screen;
+    }
+    .raven {
+      position: absolute; top: 6%; left: 50%; width: 58%;
+      transform: translateX(-50%);
+      opacity: 0.55; filter: drop-shadow(0 0 22px rgba(242,193,78,0.7));
+      mix-blend-mode: screen;
+    }
+    .raven svg { width: 100%; height: auto; display: block; }
+    .beam-source {
+      position: fixed; bottom: 8vh; left: 50%; transform: translateX(-50%);
+      width: 14px; height: 14px; border-radius: 50%; z-index: 3;
+      background: var(--signal); box-shadow: 0 0 26px 9px rgba(242,193,78,0.65); pointer-events: none;
+    }
+
+    /* gothic skyline */
+    .skyline { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 3; pointer-events: none; }
+    .skyline svg { display: block; width: 100%; height: auto; }
+
+    /* gargoyles perched, watching */
+    .gargoyle { position: fixed; bottom: 0; z-index: 4; pointer-events: none; width: clamp(150px, 22vw, 320px); }
+    .gargoyle.left  { left: 0; }
+    .gargoyle.right { right: 0; transform: scaleX(-1); }
+    .gargoyle svg { width: 100%; height: auto; display: block; }
+
+    .flash { position: fixed; inset: 0; z-index: 5; pointer-events: none; background: rgba(205,218,238,0.92); opacity: 0; }
+
+    .content { position: relative; z-index: 6; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 0 28px; }
+
+    header { display: flex; justify-content: space-between; align-items: center; padding: 30px 0; }
+    .crest { display: flex; align-items: center; gap: 12px; }
+    .crest svg { width: 28px; height: 28px; }
+    .crest span { font-family: "Cinzel", serif; font-weight: 700; letter-spacing: 0.22em; font-size: 0.85rem; text-transform: uppercase; }
+    .clock { font-family: "Oswald", sans-serif; letter-spacing: 0.2em; font-size: 0.78rem; color: var(--muted); text-transform: uppercase; }
+
+    .hero { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; padding: 40px 0; }
+    .eyebrow { font-family: "Cinzel", serif; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: var(--steel); font-size: 0.82rem; margin-bottom: 22px; }
+    .hero h1 {
+      font-family: "Anton", sans-serif; font-size: clamp(4.5rem, 19vw, 12.5rem);
+      line-height: 0.84; letter-spacing: 0.01em; text-transform: uppercase;
+      text-shadow: 0 0 50px rgba(242,193,78,0.14);
+    }
+    .hero .sub { font-family: "Oswald", sans-serif; font-weight: 300; font-size: clamp(1.1rem, 3vw, 1.7rem); margin-top: 24px; max-width: 520px; }
+    .scrollcue { margin-top: 58px; font-family: "Oswald", sans-serif; letter-spacing: 0.25em; font-size: 0.75rem; text-transform: uppercase; color: var(--muted); animation: bob 2.4s ease-in-out infinite; }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+
+    .manifesto { padding: 130px 0 170px; }
+    .manifesto .line { font-family: "Anton", sans-serif; font-size: clamp(2rem, 7vw, 4.2rem); line-height: 1.04; text-transform: uppercase; opacity: 0; transform: translateY(26px); transition: opacity 0.9s ease, transform 0.9s ease; }
+    .manifesto .line.in { opacity: 1; transform: none; }
+    .manifesto .line.dim { color: var(--muted); }
+    .manifesto .line .gold { color: var(--signal); }
+    .manifesto p { color: var(--muted); max-width: 480px; margin-top: 30px; font-size: 1.05rem; }
+
+    footer { padding: 50px 0 70px; border-top: 1px solid rgba(92,124,158,0.18); }
+    footer .row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-family: "Cinzel", serif; letter-spacing: 0.15em; text-transform: uppercase; font-size: 0.74rem; color: var(--muted); }
+
+    @media (prefers-reduced-motion: reduce) {
+      #rain, .fog, .flash { display: none; }
+      .beam-group { transition: none; }
+      .manifesto .line { opacity: 1; transform: none; transition: none; }
+      .scrollcue { animation: none; }
+    }
+    :focus-visible { outline: 2px solid var(--signal); outline-offset: 4px; }
+    @media (max-width: 640px) { .beam-group { width: 64vw; } .gargoyle { opacity: 0.85; } }
+  </style>
+</head>
+
+<body>
+  <canvas id="rain"></canvas>
+  <div class="fog"></div>
+
+  <div class="beam-group" id="beam">
+    <div class="beam"></div>
+    <!-- original raven crest projected in the beam -->
+    <div class="raven">
+      <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#F2C14E" d="M100 38
+          C96 30 92 24 86 20 C90 26 91 32 90 38
+          C78 30 60 26 40 28 C58 32 70 40 78 50
+          C60 46 40 48 22 58 C44 54 64 58 80 66
+          C66 68 52 76 42 90 C58 78 74 74 88 76
+          C86 84 86 94 90 104 C93 96 96 90 100 86
+          C104 90 107 96 110 104 C114 94 114 84 112 76
+          C126 74 142 78 158 90 C148 76 134 68 120 66
+          C136 58 156 54 178 58 C160 48 140 46 122 50
+          C130 40 142 32 160 28 C140 26 122 30 110 38
+          C109 32 110 26 114 20 C108 24 104 30 100 38 Z"/>
+        <circle cx="100" cy="40" r="4" fill="#05070B"/>
+      </svg>
+    </div>
+  </div>
+  <div class="beam-source"></div>
+
+  <!-- gothic skyline: spires, cathedrals, peaked towers -->
+  <div class="skyline">
+    <svg viewBox="0 0 1440 260" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#0C111A" d="M0,260 L0,150 L30,150 L45,120 L60,150 L60,90 L75,70 L90,90 L90,150
+        L130,150 L130,110 L150,60 L155,40 L160,60 L180,110 L180,150
+        L220,150 L220,80 L240,80 L250,30 L260,80 L280,80 L280,150
+        L330,150 L345,120 L360,150 L360,100 L385,55 L390,35 L395,55 L420,100 L420,150
+        L470,150 L470,95 L500,95 L500,150 L540,150 L555,115 L570,150 L570,85 L590,60 L610,85 L610,150
+        L660,150 L660,70 L680,70 L692,28 L700,12 L708,28 L720,70 L740,70 L740,150
+        L800,150 L800,100 L825,100 L840,55 L845,38 L850,55 L865,100 L890,100 L890,150
+        L940,150 L955,120 L970,150 L970,90 L990,65 L1010,90 L1010,150
+        L1060,150 L1060,80 L1080,80 L1090,35 L1100,80 L1120,80 L1120,150
+        L1170,150 L1185,115 L1200,150 L1200,100 L1225,55 L1230,38 L1235,55 L1260,100 L1260,150
+        L1310,150 L1310,95 L1335,95 L1335,150 L1380,150 L1395,120 L1410,150 L1410,130 L1440,130 L1440,260 Z"/>
+    </svg>
+  </div>
+
+  <!-- gargoyles -->
+  <div class="gargoyle left">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#090D14" d="M0,200 L0,150 L40,150 L40,120
+        C40,110 48,100 60,100 C58,90 62,78 72,72 C66,66 70,54 80,52
+        C78,44 84,36 94,38 C90,30 96,20 106,22 C104,14 112,8 120,14
+        C118,6 128,2 134,10 C140,4 150,8 150,18 C158,16 164,24 160,32
+        C168,34 170,44 162,50 C170,54 170,66 160,68 C168,76 162,88 152,86
+        C156,98 148,108 138,104 C140,114 132,124 122,120 C124,132 132,140 144,142
+        C158,144 168,154 168,170 L168,200 Z"/>
+      <path fill="#090D14" d="M150,18 C172,6 196,18 200,44 C190,40 178,42 170,52 C166,38 158,26 150,18 Z"/>
+    </svg>
+  </div>
+  <div class="gargoyle right">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#090D14" d="M0,200 L0,150 L40,150 L40,120
+        C40,110 48,100 60,100 C58,90 62,78 72,72 C66,66 70,54 80,52
+        C78,44 84,36 94,38 C90,30 96,20 106,22 C104,14 112,8 120,14
+        C118,6 128,2 134,10 C140,4 150,8 150,18 C158,16 164,24 160,32
+        C168,34 170,44 162,50 C170,54 170,66 160,68 C168,76 162,88 152,86
+        C156,98 148,108 138,104 C140,114 132,124 122,120 C124,132 132,140 144,142
+        C158,144 168,154 168,170 L168,200 Z"/>
+      <path fill="#090D14" d="M150,18 C172,6 196,18 200,44 C190,40 178,42 170,52 C166,38 158,26 150,18 Z"/>
+    </svg>
+  </div>
+
+  <div class="flash" id="flash"></div>
+
+  <div class="content">
+    <div class="wrap">
+      <header>
+        <div class="crest">
+          <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#F2C14E" d="M100 38 C96 30 92 24 86 20 C90 26 91 32 90 38 C78 30 60 26 40 28 C58 32 70 40 78 50 C60 46 40 48 22 58 C44 54 64 58 80 66 C66 68 52 76 42 90 C58 78 74 74 88 76 C86 84 86 94 90 104 C93 96 96 90 100 86 C104 90 107 96 110 104 C114 94 114 84 112 76 C126 74 142 78 158 90 C148 76 134 68 120 66 C136 58 156 54 178 58 C160 48 140 46 122 50 C130 40 142 32 160 28 C140 26 122 30 110 38 C109 32 110 26 114 20 C108 24 104 30 100 38 Z"/>
+          </svg>
+          <!-- 👇 CHANGE: your project name -->
+          <span>Nightwatch</span>
+        </div>
+        <!-- 👇 CHANGE -->
+        <div class="clock">Vantage City · 02:47</div>
+      </header>
+
+      <section class="hero">
+        <!-- 👇 CHANGE -->
+        <p class="eyebrow">A city of stone and shadow</p>
+        <!-- 👇 CHANGE: the big title -->
+        <h1>Night<br>watch</h1>
+        <!-- 👇 CHANGE: tagline -->
+        <p class="sub">The gargoyles have watched for a thousand years. Tonight, so do you.</p>
+        <div class="scrollcue">Scroll ↓</div>
+      </section>
+    </div>
+
+    <div class="wrap">
+      <section class="manifesto">
+        <!-- 👇 CHANGE these lines -->
+        <div class="line dim">Every city</div>
+        <div class="line">sleeps.</div>
+        <div class="line">Something</div>
+        <div class="line"><span class="gold">stays awake.</span></div>
+        <p>This is the beginning of the watch. Rewrite the city, change the crest, claim the night — it's yours now.</p>
+      </section>
+
+      <footer>
+        <div class="row">
+          <!-- 👇 CHANGE -->
+          <span>Nightwatch — MMXXVI</span>
+          <span>Built by Hussain Muntaha</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const beam = document.getElementById("beam");
+    if (!reduced) {
+      window.addEventListener("pointermove", (e) => {
+        const cx = window.innerWidth / 2, cy = window.innerHeight;
+        const angle = Math.atan2(e.clientX - cx, cy - e.clientY) * 180 / Math.PI;
+        const clamped = Math.max(-30, Math.min(30, angle));
+        beam.style.transform = `translateX(-50%) rotate(${clamped}deg)`;
+      });
+    }
+
+    const canvas = document.getElementById("rain");
+    const ctx = canvas.getContext("2d");
+    let drops = [];
+    function size() { canvas.width = innerWidth; canvas.height = innerHeight; }
+    function seed() {
+      drops = [];
+      const count = Math.floor(innerWidth / 3.5);
+      for (let i = 0; i < count; i++)
+        drops.push({ x: Math.random()*innerWidth, y: Math.random()*innerHeight, len: 9+Math.random()*16, sp: 7+Math.random()*9 });
+    }
+    function rain() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.strokeStyle = "rgba(155,175,200,0.28)"; ctx.lineWidth = 1;
+      for (const d of drops) {
+        ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x - 1.2, d.y + d.len); ctx.stroke();
+        d.y += d.sp; d.x -= 0.5;
+        if (d.y > innerHeight) { d.y = -d.len; d.x = Math.random()*innerWidth; }
+      }
+      requestAnimationFrame(rain);
+    }
+    if (!reduced) { size(); seed(); rain(); addEventListener("resize", () => { size(); seed(); }); }
+
+    const flash = document.getElementById("flash");
+    function strike() {
+      flash.style.transition = "opacity 0.05s"; flash.style.opacity = "0.92";
+      setTimeout(() => flash.style.opacity = "0", 60);
+      setTimeout(() => { flash.style.opacity = "0.55"; setTimeout(()=> flash.style.opacity="0",55); }, 160);
+      setTimeout(strike, 5500 + Math.random()*9000);
+    }
+    if (!reduced) setTimeout(strike, 3000);
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); });
+    }, { threshold: 0.4 });
+    document.querySelectorAll(".manifesto .line").forEach((el) => io.observe(el));
+  </script>
+</body>
+</html>
